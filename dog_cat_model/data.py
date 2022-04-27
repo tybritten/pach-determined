@@ -2,7 +2,7 @@ import os
 import shutil
 import tarfile
 
-import python_pachyderm
+import boto3
 import torch
 from PIL import Image
 

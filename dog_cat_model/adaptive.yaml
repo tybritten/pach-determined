@@ -1,0 +1,25 @@
+name: dogcat_adaptive
+data:
+  pachyderm:
+    host: 34.68.102.123
+    port: 30650
+    repo: dogs-and-cats
+    branch: master
+hyperparameters:
+  learning_rate:
+    type: log
+    minval: -4.0
+    maxval: -0.5
+    base: 10.0
+  global_batch_size: 16
+  weight_decay: 1e-4
+  nesterov: True
+searcher:
+  name: adaptive_simple
+  mode: aggressive
+  metric: validation_error
+  max_steps: 2000
+  max_trials: 32
+entrypoint: model_def:DogCatModel
+batches_per_step: 5
+min_validation_period: 80
