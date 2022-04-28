@@ -77,13 +77,20 @@ class DogCatModel(PyTorchTrial):
     def download_data(self) -> str:
         data_config = self.context.get_data_config()
         data_dir = os.path.join(self.download_directory, 'data')
+        pachyderm_host = data_config['pachyderm']['host']
+        pachyderm_port = data_config['pachyderm']['port']
+
         download_pach_repo(
-            data_config["pachyderm"]["s3_endpoint"],
+            pachyderm_host,
+            pachyderm_port,
             data_config["pachyderm"]["repo"],
+            data_config["pachyderm"]["branch"],
             data_dir,
+            data_config["pachyderm"]["token"]
         )
         print(f'Data dir set to : {data_dir}')
         return data_dir
+
 
     # -------------------------------------------------------------------------
 

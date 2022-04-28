@@ -2,7 +2,7 @@ import os
 import shutil
 import tarfile
 
-import boto3
+import python_pachyderm
 import torch
 from PIL import Image
 
@@ -47,26 +47,30 @@ class CatDogDataset(Dataset):
         sample = (image, label)
         return sample
 
+def download_pach_repo(pachyderm_host, pachyderm_port, repo, branch, root, token=None):
+    client = python_pachyderm.Client(host=pachyderm_host, port=pachyderm_port, auth_token=token)
+    print('Starting to download dataset')
+    files = []
+    if not os.path.exists(root):
+        os.makedirs(root)
+    for file in client.walk_file((repo, branch), "/"):
+        files.append(file)
 
-def download_pach_repo(s3_endpoint, repo, root):
-    s3_resource = boto3.resource(
-        "s3",
-        endpoint_url=s3_endpoint,
-        aws_access_key_id="",
-        aws_secret_access_key="",
-    )
+    fpaths = []
+    for i in range(len(files)):
+        path = files[i].file.path
+        fpath = os.path.join(root, path[1:])
+        if files[i].file_type == 2:
+            os.makedirs(fpath, exist_ok=True)
+        else:
+            fpaths.append((path, fpath))
+    for path, fpath in fpaths:
+        src_file = client.get_file((repo, branch), path)
+        # print(f'Downloading {src_file} to {fpath}')
 
-    print("Starting to download dataset")
-    bucket = s3_resource.Bucket(repo)
-    for obj in bucket.objects.filter():
-        target = os.path.join(root, obj.key)
-        if not os.path.exists(os.path.dirname(target)):
-            os.makedirs(os.path.dirname(target))
-        if obj.key[-1] == "/":
-            continue
-        bucket.download_file(obj.key, target)
-        if target.endswith(".tar.gz"):
-            tarfile.open(target).extractall(path=root)
+        with open(fpath, "wb") as dest_file:
+            shutil.copyfileobj(src_file, dest_file)
 
-
-    print("Download operation ended")
+        if fpath.endswith('.tar.gz'):
+            tarfile.open(fpath).extractall(path=root)
+    print('Download operation ended')

@@ -1,4 +1,10 @@
 name: dogcat_single_tyler
+data:
+    pachyderm:
+      host: pachd.default.svc.cluster.local
+      port: 30650
+      repo: dogs-and-cats
+      token: 3cb22a223d0d4b9c90cb88b4fc2a48bb
 hyperparameters:
     learning_rate: .005
     global_batch_size: 32
